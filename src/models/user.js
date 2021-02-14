@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 
-const schema = mongoose.Schema({
+const schema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -12,6 +12,7 @@ const schema = mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+    unique: true,
     validate(value) {
       if (!validator.isEmail(value)) throw new Error('Invalid email');
     },
@@ -34,6 +35,18 @@ const schema = mongoose.Schema({
     },
   },
 });
+
+schema.statics.findByCredentials = async (email, password) => {
+  const user = await User.findOne({ email });
+
+  if (!user) throw new Error('Unable to login');
+
+  const isMatch = await bcrypt.compare(password, user.password);
+
+  if (!isMatch) throw new Error('Unable to login');
+
+  return user;
+};
 
 schema.pre('save', async function (next) {
   if (this.isModified('password'))

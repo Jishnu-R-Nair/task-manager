@@ -3,6 +3,8 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const { authSignature } = require('../constants/auth');
+
 const schema = new mongoose.Schema({
   name: {
     type: String,
@@ -58,7 +60,7 @@ schema.statics.findByCredentials = async (email, password) => {
 };
 
 schema.methods.generateAuthToken = async function () {
-  const token = jwt.sign({ _id: this._id.toString() }, 'k2Ceg>w^+4dEs%^z');
+  const token = jwt.sign({ _id: this._id.toString() }, authSignature);
 
   this.tokens = this.tokens.concat({ token });
   await this.save();

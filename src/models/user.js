@@ -68,6 +68,15 @@ schema.methods.generateAuthToken = async function () {
   return token;
 };
 
+schema.methods.toJSON = function () {
+  const userObject = this.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+};
+
 // create hash of password
 schema.pre('save', async function (next) {
   if (this.isModified('password'))

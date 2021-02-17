@@ -16,10 +16,19 @@ router.post('/tasks', auth, async (req, res) => {
   }
 });
 
+// GET /tasks?completed=true
+// GET /tasks?limit=2&skip=0
+// GET /tasks?sortBy=createdAt_desc
 router.get('/tasks', auth, async (req, res) => {
   const match = {};
+  const sort = {};
 
   if (req.query.completed) match.completed = JSON.parse(req.query.completed);
+
+  if (req.query.sortBy) {
+    const queryParts = req.query.sortBy.split('_');
+    sort[queryParts[0]] = queryParts[1] === 'desc' ? -1 : 1;
+  }
 
   try {
     await req.user
@@ -29,6 +38,7 @@ router.get('/tasks', auth, async (req, res) => {
         options: {
           limit: parseInt(req.query.limit),
           skip: parseInt(req.query.skip),
+          sort,
         },
       })
       .execPopulate();
